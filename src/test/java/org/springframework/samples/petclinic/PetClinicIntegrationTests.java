@@ -16,43 +16,38 @@
 
 package org.springframework.samples.petclinic;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+
+import java.time.Duration;
+
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
-import org.springframework.samples.petclinic.vet.VetRepository;
-import org.springframework.web.client.RestTemplate;
 
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PetClinicIntegrationTests {
 
 	@LocalServerPort
 	int port;
 
-	@Autowired
-	private VetRepository vets;
-
-	@Autowired
-	private RestTemplateBuilder builder;
-
 	@Test
-	void testFindAll() throws Exception {
-		vets.findAll();
-		vets.findAll(); // served from cache
-	}
+	public void testTitle() {
+		ChromeOptions options = new ChromeOptions();
+		options.addArguments("--headless");
+		WebDriver driver = new ChromeDriver(options);
+		driver.get("http://localhost:" + port);
 
-	@Test
-	void testOwnerDetails() {
-		RestTemplate template = builder.rootUri("http://localhost:" + port).build();
-		ResponseEntity<String> result = template.exchange(RequestEntity.get("/owners/1").build(), String.class);
-		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+		String title = driver.getTitle();
+		assertEquals("PetClinic :: a Spring Framework demonstration", title);
+
+		driver.manage().timeouts().implicitlyWait(Duration.ofMillis(500));
+
+		driver.quit();
 	}
 
 }
